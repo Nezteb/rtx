@@ -13,12 +13,23 @@ function rtx
   set command $argv[1]
   set -e argv[1]
 
-  switch "$command"
-  case deactivate shell
-    source (command rtx "$command" $argv|psub)
-  case '*'
+  if contains -- --help $argv
     command rtx "$command" $argv
+    return $status
   end
+
+  switch "$command"
+  case deactivate s shell
+    # if help is requested, don't eval
+    if contains -- -h $argv
+    else if contains -- --help $argv
+    else
+      command rtx "$command" $argv | source
+      return $status
+    end
+  end
+
+  command rtx "$command" $argv
 end
 
 function __rtx_env_eval --on-event fish_prompt --description 'Update rtx environment when changing directories';
